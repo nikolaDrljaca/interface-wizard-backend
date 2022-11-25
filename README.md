@@ -47,8 +47,7 @@ pip install -r requirements.txt
 Download mnist_model, test_images, test_labels from GDrive
 
 # 4. Run the app
-cd app
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 
 ```
 

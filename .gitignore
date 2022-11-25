@@ -1,5 +1,6 @@
 # Our additions
 /app/data
+/models
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
