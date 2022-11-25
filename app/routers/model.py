@@ -12,7 +12,7 @@ router = APIRouter(
 
 
 @router.post('/upload')
-async def accept_file(file: UploadFile, exp_date: str = Form()):
+async def accept_ml_model(file: UploadFile, exp_date: str = Form()):
     # Create the UUID, timestamp and expiry timestamp
     model_uuid = uuid.uuid1()
     created_timestamp = datetime.timestamp(datetime.now()) #Unix timestamp
@@ -20,7 +20,8 @@ async def accept_file(file: UploadFile, exp_date: str = Form()):
 
     # Save the model under path root/models/[uuid]/[filename].[ext]
     curr_model_dir = create_curr_model_dir(str(model_uuid))
-    async with aiofiles.open(f'{curr_model_dir}/{file.filename}', 'wb') as temp:
+    fext = file.filename.split('.')[-1]
+    async with aiofiles.open(f'{curr_model_dir}/ml_m.{fext}', 'wb') as temp:
         while content := await file.read(1024):
             await temp.write(content)
 
