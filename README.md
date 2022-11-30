@@ -1,14 +1,6 @@
 # ML Backend
 Supporting backend app for `ml-interface-wizard` to handle business logic.
 
-## Todo
-
-- [ ] Figure out and document development process. FIRST!
-
-- [ ] Create `/pred_model` route for ML model handling (should have request body params or query params to suggest model type. Optionally handle this in function itself.)
-- [ ] `/make` GET to get the prediction (*as extension to pred_model*) (throw exceptions in response if model/data is not present for session.)
-- [ ] `/pred_model` POST to post the model
-- [ ] `/pred_model/data` POST the data that will be used to eval
 
 ## Folder Structure
 Example file structure taken from `FastAPI` docs. This project will try to follow this scheme. 
@@ -18,14 +10,14 @@ Example file structure taken from `FastAPI` docs. This project will try to follo
 ├── app                  # "app" is a Python package
 │   ├── __init__.py      # this file makes "app" a "Python package"
 │   ├── main.py          # "main" module, e.g. import app.main
-│   ├── dependencies.py  # "dependencies" module, e.g. import app.dependencies
-│   └── routers          # "routers" is a "Python subpackage"
+│   ├── dir_util.py      # file containing methods to handle local filesystem storage and model loading(for now)
+│   ├── processing.py    # functions to convert types (binary -> image/video/text/etc.)
+│   └── routers          # 
 │   │   ├── __init__.py  # makes "routers" a "Python subpackage"
-│   │   ├── items.py     # "items" submodule, e.g. import app.routers.items
-│   │   └── users.py     # "users" submodule, e.g. import app.routers.users
-│   └── internal         # "internal" is a "Python subpackage"
-│       ├── __init__.py  # makes "internal" a "Python subpackage"
-│       └── admin.py     # "admin" submodule, e.g. import app.internal.admin
+│   │   ├── model_v1.py  # v1 endpoints
+│   └── models           # 
+│       ├── __init__.py  # 
+│       └── MetadataModels.py   # Contains metadata models for DB and request/response 
 ```
 
 ## How to run
@@ -43,8 +35,10 @@ source env/bin/activate # Unix
 # 3. Install packages
 pip install -r requirements.txt
 
+--- OPTIONAL ---
 # 4. Make sure temp data and model are present in /app/data
 Download mnist_model, test_images, test_labels from GDrive
+--- OPTIONAL ---
 
 # 4. Run the app
 uvicorn app.main:app --reload
