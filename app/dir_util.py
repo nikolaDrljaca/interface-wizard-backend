@@ -19,10 +19,10 @@ def create_curr_model_dir(model_uuid: str):
     return temp
 
 
-def load_tf_model(model_uuid: str, ext: str=""):
+def load_tf_model(model_uuid: str, ext: str):
     path = os.path.join(get_models_dir(), model_uuid)
     if not os.path.exists(path):
         return
 
-    model = tf.keras.models.load_model(f'{path}/ml_m.h5')
+    model = tf.keras.models.load_model(f'{path}/ml_m.{ext}')
     return model

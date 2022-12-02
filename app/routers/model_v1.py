@@ -1,7 +1,7 @@
-from fastapi import APIRouter, WebSocket
+from fastapi import APIRouter, WebSocket, WebSocketException
 from fastapi import UploadFile, Form, Depends, status
 from fastapi.responses import JSONResponse
-import uuid
+from bson.objectid import ObjectId
 from datetime import datetime
 import aiofiles
 import numpy as np
@@ -52,11 +52,17 @@ async def accept_ml_model(model_file: UploadFile, metadata_request: str = Form()
 
 
 @router.websocket('/model/predict/ws')
-async def predict(websocket: WebSocket, model_uuid: str):
-    # Check for model existance by UUID, raise HTTP error if not found
+async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
+    if len(model_id) != 24:
+        raise WebSocketException(code=status.WS_1011_INTERNAL_ERROR)
 
-    # Load the model by using appropriate vendor
-    ml_model = load_tf_model(model_uuid)
+    metadata = await db.ml_metadata.find_one({"_id": ObjectId(model_id)})
+    if metadata is None:
+       raise WebSocketException(code=status.WS_1011_INTERNAL_ERROR, reason="Model with specified ID does not exist.")
+
+    # Load the model by using appropriate vendor, metadata.vendor
+    ml_model = load_tf_model(model_id, metadata.ext)
+
     # Open the websocket connection
     await websocket.accept()
     while True:
