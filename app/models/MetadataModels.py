@@ -23,7 +23,7 @@ class InputItemRequest(BaseModel):
 
 class ModelMetadata(BaseModel):
     name: str
-    model_uuid: str
+    #model_uuid: str
     created: float
     vendor: str
     file_ext: str
@@ -31,12 +31,12 @@ class ModelMetadata(BaseModel):
     expires: float
     inputs: List[InputDataItem]
 
-    def from_request(request: ModelMetadataRequest, full_name: str, uuid: str, created: float, expires: float):
+    def from_request(request: ModelMetadataRequest, full_name: str, created: float, expires: float):
         _split = full_name.split('.')
 
         return ModelMetadata(
             name=_split[0],
-            model_uuid=uuid,
+            #model_uuid=uuid,
             created=created,
             vendor=request.vendor,
             file_ext=_split[-1],

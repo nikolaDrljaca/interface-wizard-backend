@@ -1,5 +1,6 @@
 from fastapi import APIRouter, WebSocket
-from fastapi import UploadFile, Form
+from fastapi import UploadFile, Form, Depends, status
+from fastapi.responses import JSONResponse
 import uuid
 from datetime import datetime
 import aiofiles
@@ -8,7 +9,9 @@ from ..dir_util import create_curr_model_dir
 from ..dir_util import load_tf_model
 from ..models.MetadataModels import ModelMetadata
 from ..models.MetadataModels import ModelMetadataRequest
+from ..models.ResponseModels import UploadModelResponse
 from ..processing import b64image_to_ndarray
+from ..dependencies import get_db
 
 
 router = APIRouter(
@@ -16,38 +19,36 @@ router = APIRouter(
 )
 
 
-@router.post('/model/upload')
-async def accept_ml_model(model_file: UploadFile, metadata_request: str = Form()):
-    # 1. Parse the request
+@router.post('/model/upload', response_description="Uploaded model ID and timestamps.", response_model=UploadModelResponse)
+async def accept_ml_model(model_file: UploadFile, metadata_request: str = Form(), db=Depends(get_db)):
+    # Parse the request
     request = ModelMetadataRequest.parse_raw(metadata_request)
-    # Create the UUID, timestamp and expiry timestamp
-    model_uuid = uuid.uuid1()
+
+    # Create the ID, timestamp and expiry timestamp
     created_timestamp = datetime.timestamp(datetime.now())
     exp = datetime.timestamp(datetime.strptime(
         request.expires, "%d-%m-%Y %H:%M:%S"))
 
-    # Create model metadata, save under root/models/[uuid]/metadata.json -> for now
-    metadata = ModelMetadata.from_request(request, full_name=model_file.filename, uuid=str(
-        model_uuid), created=created_timestamp, expires=exp)
+    # Create model metadata, save under root/models/[id]/metadata.json -> for now
+    metadata = ModelMetadata.from_request(
+        request, full_name=model_file.filename, created=created_timestamp, expires=exp)
 
-    # Save to DB instead of local filesystem
-    curr_model_dir = create_curr_model_dir(str(model_uuid))
-    async with aiofiles.open(f'{curr_model_dir}/metadata.json', 'w') as temp:
-        await temp.write(metadata.json())
+    # Save to DB
+    new_metadata = await db.ml_metadata.insert_one(metadata.dict())
+    model_id = str(new_metadata.inserted_id)
 
-    # Save the model under path root/models/[uuid]/[filename].[ext]
+    # Save the model under path root/models/[id]/[filename].[ext]
+    curr_model_dir = create_curr_model_dir(str(model_id))
     fext = model_file.filename.split('.')[-1]
     async with aiofiles.open(f'{curr_model_dir}/ml_m.{fext}', 'wb') as temp:
         while content := await model_file.read(1024):
             await temp.write(content)
 
-    # Return model name, UUID and expiry date
-    return {
-        "model_uuid": str(model_uuid),
-        "model_name": model_file.filename,
-        "created_timestamp": str(created_timestamp),
-        "expiration_timestamp": str(exp),
-    }
+    # Return model name, ID and expiry date
+    response = UploadModelResponse(model_id=model_id, model_name=model_file.filename, created_timestamp=str(
+        created_timestamp), expires_timestamp=str(created_timestamp))
+
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content=response.dict())
 
 
 @router.websocket('/model/predict/ws')

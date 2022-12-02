@@ -29,6 +29,7 @@ keras==2.11.0
 libclang==14.0.6
 Markdown==3.4.1
 MarkupSafe==2.1.1
+motor==3.1.1
 numpy==1.23.5
 oauthlib==3.2.2
 opt-einsum==3.3.0
@@ -40,6 +41,7 @@ pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycodestyle==2.10.0
 pydantic==1.10.2
+pymongo==4.3.3
 pyparsing==3.0.9
 python-dotenv==0.21.0
 python-multipart==0.0.5

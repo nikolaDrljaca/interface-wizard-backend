@@ -40,9 +40,15 @@ pip install -r requirements.txt
 Download mnist_model, test_images, test_labels from GDrive
 --- OPTIONAL ---
 
-# 4. Run the app
-uvicorn app.main:app --reload
+# 4. Setup MongoDB instance, make sure Docker is installed
+docker compose up -d
 
+# Controll the docker container
+docker compose stop -> stop or shutdown the container, but DON'T tear it down, the data will not stay
+docker compose start -> If the container is stopped, start it this way
+
+# 5. Run the app
+uvicorn app.main:app --reload
 ```
 
 ## Notes
