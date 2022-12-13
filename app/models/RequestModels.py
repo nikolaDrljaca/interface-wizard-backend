@@ -1,23 +1,13 @@
 from pydantic import BaseModel
-
-
-class InputDataItem(BaseModel):
-    type: str
-    order: int
+import typing
 
 
 class ModelMetadataRequest(BaseModel):
-    vendor: str
+    name: str
+    desc: str
     model_type: str
+    in_transformer: bool
+    out_transformer: bool
     expires: str
-    inputs: list[InputDataItem]
-
-
-class PredictionRequestItem(BaseModel):
-    type: str
-    value: str
-    order: str
-
-
-class PredictionRequest(BaseModel):
-    inputs: list[PredictionRequestItem]
+    feature_names: list[str]
+    target_name: str

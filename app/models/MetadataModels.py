@@ -1,24 +1,27 @@
 from pydantic import BaseModel
-from .RequestModels import ModelMetadataRequest, InputDataItem
+from .RequestModels import ModelMetadataRequest
 
 
 class ModelMetadata(BaseModel):
     name: str
-    created: float
-    vendor: str
-    file_ext: str
+    desc: str
     model_type: str
+    in_transformer: bool
+    out_transformer: bool
+    created: float
     expires: float
-    inputs: list[InputDataItem]
+    feature_names: list[str]
+    target_name: str
 
+    @staticmethod
     def from_request(request: ModelMetadataRequest, full_name: str, created: float, expires: float):
-        _split = full_name.split('.')
-
         return ModelMetadata(
-            name=_split[0],
-            created=created,
-            vendor=request.vendor,
-            file_ext=_split[-1],
+            name=full_name,
+            desc=request.desc,
             model_type=request.model_type,
+            in_transformer=request.in_transformer,
+            out_transformer=request.out_transformer,
+            created=created,
             expires=expires,
-            inputs=request.inputs)
+            feature_names=request.feature_names,
+            target_name=request.target_name)

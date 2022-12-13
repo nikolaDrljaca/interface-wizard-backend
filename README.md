@@ -52,7 +52,4 @@ uvicorn app.main:app --reload
 ```
 
 ## Notes
-
-- If the React app can't accept whole folders, we might need a more elaborate solution for `SavedModel` types. Meaning, we might need a form that accepts all the different files of a `SavedModel` and then we can construct the proper file structure in the backend.
-- `.hdf5` is a single-file type so there is no problems here.
-- If images are in transmit for websockets, they need to be base64 encoded when sent and base64 decoded when received.
+Export requirements with `pip3 freeze > requirements.txt`
