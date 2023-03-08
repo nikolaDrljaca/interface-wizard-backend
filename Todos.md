@@ -2,6 +2,7 @@
 - [ ] Upload model response should return a formatted date. 
 - [ ] Consistent file naming.
 - [ ] Route structure - drop the 'model' part, unnecessary.
+- [ ] Check that uploaded files are pickles -> (Error handling)[https://fastapi.tiangolo.com/tutorial/handling-errors/]
 - [ ] Repository cleanup for a concise v1 version, v1 in reference to the metadata file.
 - [ ] Endpoint for metadata structure and example metadata object. (JSON)
 - [ ] Rename processing to services and make appropriate changes inside.
