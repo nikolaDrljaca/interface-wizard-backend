@@ -53,3 +53,12 @@ uvicorn app.main:app --reload
 
 ## Notes
 Export requirements with `pip3 freeze > requirements.txt`
+To connect to mongodb instance use URI structure: `mongodb://[username]:[password]@localhost:27017/[optionalDatabaseName]`
+
+### To use Compose with env variables
+- Make sure `.env` and `docker-compose.yml` are in the same directory
+- Define variables inside `.env` and reference then using ${} ex. `- MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}`
+- Make sure `.env` is git ignored
+
+
+
