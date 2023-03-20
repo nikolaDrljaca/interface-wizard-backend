@@ -1,16 +1,18 @@
 import os
-from fastapi import UploadFile
-import aiofiles
-import joblib
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
+from fastapi import UploadFile, HTTPException, status
+import aiofiles
+import joblib
 
-MODELS_DIR = 'models'
+
+MODELS_DIR = './temp/ml_models'
+
 
 def get_models_dir():
     data_dir = os.path.join(os.getcwd(), MODELS_DIR)
     if not os.path.exists(data_dir):
-        os.mkdir(data_dir)
+        os.makedirs(data_dir)
 
     return data_dir
 
@@ -52,25 +54,27 @@ async def store_model(
         in_tsf: UploadFile | None = None,
         out_tsf: UploadFile | None = None):
 
-        curr_model_dir = create_curr_model_dir(str(model_id))
-        fext = model_file.filename.split('.')[-1]
+    curr_model_dir = create_curr_model_dir(str(model_id))
+    fext = model_file.filename.split('.')[-1]
+    print(fext)
 
-        # if fext != 'pkl' or fext != 'pickle':
-        #     return
+    if fext not in {"pkl", "pickle"}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Submitted file is not a .pkl file.")
 
-        # Save the model under path root/models/[id]/ml_m.{fext}
-        async with aiofiles.open(f'{curr_model_dir}/ml_m.pkl', 'wb') as temp:
-            while content := await model_file.read(1024):
+    # Save the model under path root/models/[id]/ml_m.{fext}
+    async with aiofiles.open(f'{curr_model_dir}/ml_m.pkl', 'wb') as temp:
+        while content := await model_file.read(1024):
+            await temp.write(content)
+
+    if in_tsf is not None:
+        async with aiofiles.open(f'{curr_model_dir}/in_tsf.pkl', 'wb') as temp:
+            while content := await in_tsf.read(1024):
                 await temp.write(content)
 
-        if in_tsf is not None:
-            async with aiofiles.open(f'{curr_model_dir}/in_tsf.pkl', 'wb') as temp:
-                while content := await in_tsf.read(1024):
-                    await temp.write(content)
+    if out_tsf is not None:
+        async with aiofiles.open(f'{curr_model_dir}/out_tsf.pkl', 'wb') as temp:
+            while content := await out_tsf.read(1024):
+                await temp.write(content)
 
-        if out_tsf is not None:
-            async with aiofiles.open(f'{curr_model_dir}/out_tsf.pkl', 'wb') as temp:
-                while content := await out_tsf.read(1024):
-                    await temp.write(content)
-
-        return
+    return

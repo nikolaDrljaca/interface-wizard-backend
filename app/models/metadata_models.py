@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from .RequestModels import ModelMetadataRequest
+from .request_models import ModelMetadataRequest
 
 
 class ModelMetadata(BaseModel):

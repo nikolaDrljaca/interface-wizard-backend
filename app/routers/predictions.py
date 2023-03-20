@@ -2,20 +2,24 @@ from fastapi import APIRouter, WebSocket, WebSocketException
 from fastapi import UploadFile, Form, Depends, status
 from fastapi.responses import JSONResponse
 from bson.objectid import ObjectId
-from datetime import datetime
-from ..dir_util import store_model, load_model, load_out_tsf, load_in_tsf
-from ..models.MetadataModels import ModelMetadata
-from ..models.MetadataModels import ModelMetadataRequest
-from ..models.ResponseModels import UploadModelResponse
+from datetime import datetime, timedelta
+from ..service.dir_service import store_model, load_model, load_out_tsf, load_in_tsf
+from ..models.metadata_models import ModelMetadata
+from ..models.metadata_models import ModelMetadataRequest
+from ..models.response_models import UploadModelResponse
 from ..dependencies import get_db
 
 
 router = APIRouter(
-    prefix='/v1'
+    prefix='/api/v1'
 )
 
 
-@router.post('/model/upload', response_description="Uploaded model ID and timestamps.", response_model=UploadModelResponse)
+@router.post(
+    '/upload', 
+    response_description="Uploaded model ID and timestamps.",
+    response_model=UploadModelResponse, 
+    description="Accepts a pkl model file with transformers and metadata. Files are persisted.")
 async def accept_ml_model(
         model_file: UploadFile,
         in_tsf: UploadFile | None = None,
@@ -26,13 +30,16 @@ async def accept_ml_model(
     request = ModelMetadataRequest.parse_raw(metadata_request)
 
     # Create the ID, timestamp and expiry timestamp
-    created_timestamp = datetime.timestamp(datetime.now())
-    exp = datetime.timestamp(datetime.strptime(
-        request.expires, "%d-%m-%Y %H:%M:%S"))
+    created_at = datetime.today()
+    # User submitted expiry date is ignored for now.
+    # expires_at = datetime.strptime(request.expires, "%d-%m-%Y %H:%M:%S")
+    expires_at = created_at + timedelta(1)
+    created_timestamp = datetime.timestamp(created_at)
+    exp_timestamp = datetime.timestamp(expires_at)
 
     # Create model metadata
     metadata = ModelMetadata.from_request(
-        request, full_name=model_file.filename, created=created_timestamp, expires=exp)
+        request, full_name=model_file.filename, created=created_timestamp, expires=exp_timestamp)
 
     # Save to DB
     new_metadata = await db.ml_metadata.insert_one(metadata.dict())
@@ -43,12 +50,12 @@ async def accept_ml_model(
 
     # Return model name, ID and expiry date
     response = UploadModelResponse(model_id=model_id, model_name=model_file.filename, created_timestamp=str(
-        created_timestamp), expires_timestamp=str(exp))
+        created_at), expires_timestamp=str(expires_at))
 
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=response.dict())
 
 
-@router.websocket('/model/predict/ws')
+@router.websocket('/predict/ws')
 async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
     if len(model_id) != 24:
         raise WebSocketException(code=status.WS_1011_INTERNAL_ERROR)

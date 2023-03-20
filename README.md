@@ -3,22 +3,9 @@ Supporting backend app for `ml-interface-wizard` to handle business logic.
 
 
 ## Folder Structure
-Example file structure taken from `FastAPI` docs. This project will try to follow this scheme. 
+This project will try to follow this scheme. Will be updated as the project evolves.
+![Project directory structure.](dir_struct.png "Project directory structure.")
 
-```
-.
-├── app                  # "app" is a Python package
-│   ├── __init__.py      # this file makes "app" a "Python package"
-│   ├── main.py          # "main" module, e.g. import app.main
-│   ├── dir_util.py      # file containing methods to handle local filesystem storage and model loading(for now)
-│   ├── processing.py    # functions to convert types (binary -> image/video/text/etc.)
-│   └── routers          # 
-│   │   ├── __init__.py  # makes "routers" a "Python subpackage"
-│   │   ├── model_v1.py  # v1 endpoints
-│   └── models           # 
-│       ├── __init__.py  # 
-│       └── MetadataModels.py   # Contains metadata models for DB and request/response 
-```
 
 ## How to run
 **Make sure python is installed on the local machine.**
@@ -35,11 +22,6 @@ source env/bin/activate # Unix
 # 3. Install packages
 pip install -r requirements.txt
 
---- OPTIONAL ---
-# 4. Make sure temp data and model are present in /app/data
-Download mnist_model, test_images, test_labels from GDrive
---- OPTIONAL ---
-
 # 4. Setup MongoDB instance, make sure Docker is installed
 docker compose up -d
 
@@ -50,6 +32,21 @@ docker compose start -> If the container is stopped, start it this way
 # 5. Run the app
 uvicorn app.main:app --reload
 ```
+
+## Documentation
+`openapi.json` documentation is available at `<localhost>/docs`.
+A brief overview of the endpoints can be viewed there. 
+
+For the prediction WebSocket, the following apply:
+- endpoint: `/api/v1/predict/ws/[model_id]`
+- accepts JSON body:
+```
+{
+    "features": []
+}
+```
+- Returns the response from the model or the output transformer, if present.
+
 
 ## Notes
 Export requirements with `pip3 freeze > requirements.txt`
