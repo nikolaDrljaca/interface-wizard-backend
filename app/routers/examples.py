@@ -5,7 +5,10 @@ from ..models.metadata_models import ModelMetadataRequest
 
 router = APIRouter(prefix='/api/v1/examples')
 
-@router.get(path="/",description="Returns an example of a complete model metadata JSON object.")
+@router.get(
+    path="/",
+    description="Returns an example of a complete model metadata JSON object.", 
+    response_model=ModelMetadataRequest)
 async def get_metadata_example():
     raw = """
     {
@@ -29,7 +32,10 @@ async def get_metadata_example():
     return JSONResponse(status_code=status.HTTP_200_OK, content=parsed.dict())
 
 
-@router.get(path='/struct', description="Returns a general structure for the model metadata JSON object.")
+@router.get(
+    path='/struct', 
+    description="Returns a general structure for the model metadata JSON object.",
+    response_model=ModelMetadataRequest)
 async def get_metadata_struct():
     raw = """
     {
