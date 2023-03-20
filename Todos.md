@@ -4,7 +4,7 @@
 - [x] Route structure - drop the 'model' part, unnecessary.
 - [x] Check that uploaded files are pickles -> (Error handling)[https://fastapi.tiangolo.com/tutorial/handling-errors/]
 - [x] Repository cleanup for a concise v1 version, v1 in reference to the metadata file.
-- [ ] Endpoint for metadata structure and example metadata object. (JSON)
+- [x] Endpoint for metadata structure and example metadata object. (JSON)
 - [x] Rename processing to services and make appropriate changes inside.
 - [x] Move directory utils to services. 
 
@@ -17,3 +17,22 @@
 - [ ] Deployment strategies - containerizing and running.
 - [ ] Logging implementation. 
 - [ ] Documentation.
+
+## DEL1
+- [ ] Basic workflow for predictions
+- [ ] Data persistence for metadata
+- [ ] Data persistence for predictions
+
+# DEL2 
+- [ ] Endpoints for metadata retrieval
+- [ ] Finished prediction workflow
+- [ ] Enpoints for prediction retrieval
+
+# DEL3
+- [ ] Finished enpoints
+- [ ] Outdated model cleanup service
+
+# DEL4 
+- [ ] Finished workflows
+- [ ] Finished cleanup service
+- [ ] Revisions
