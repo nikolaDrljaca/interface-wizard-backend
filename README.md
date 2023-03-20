@@ -1,32 +1,11 @@
 # ML Backend
 Supporting backend app for `ml-interface-wizard` to handle business logic.
 
-## Todo
-
-- [ ] Figure out and document development process. FIRST!
-
-- [ ] Create `/pred_model` route for ML model handling (should have request body params or query params to suggest model type. Optionally handle this in function itself.)
-- [ ] `/make` GET to get the prediction (*as extension to pred_model*) (throw exceptions in response if model/data is not present for session.)
-- [ ] `/pred_model` POST to post the model
-- [ ] `/pred_model/data` POST the data that will be used to eval
 
 ## Folder Structure
-Example file structure taken from `FastAPI` docs. This project will try to follow this scheme. 
+This project will try to follow this scheme. Will be updated as the project evolves.
+![Project directory structure.](dir_struct.png "Project directory structure.")
 
-```
-.
-├── app                  # "app" is a Python package
-│   ├── __init__.py      # this file makes "app" a "Python package"
-│   ├── main.py          # "main" module, e.g. import app.main
-│   ├── dependencies.py  # "dependencies" module, e.g. import app.dependencies
-│   └── routers          # "routers" is a "Python subpackage"
-│   │   ├── __init__.py  # makes "routers" a "Python subpackage"
-│   │   ├── items.py     # "items" submodule, e.g. import app.routers.items
-│   │   └── users.py     # "users" submodule, e.g. import app.routers.users
-│   └── internal         # "internal" is a "Python subpackage"
-│       ├── __init__.py  # makes "internal" a "Python subpackage"
-│       └── admin.py     # "admin" submodule, e.g. import app.internal.admin
-```
 
 ## How to run
 **Make sure python is installed on the local machine.**
@@ -43,16 +22,40 @@ source env/bin/activate # Unix
 # 3. Install packages
 pip install -r requirements.txt
 
-# 4. Make sure temp data and model are present in /app/data
-Download mnist_model, test_images, test_labels from GDrive
+# 4. Setup MongoDB instance, make sure Docker is installed
+docker compose up -d
 
-# 4. Run the app
-cd app
-uvicorn main:app --reload
+# Controll the docker container
+docker compose stop -> stop or shutdown the container, but DON'T tear it down, the data will not stay
+docker compose start -> If the container is stopped, start it this way
 
+# 5. Run the app
+uvicorn app.main:app --reload
 ```
 
-## Notes
+## Documentation
+`openapi.json` documentation is available at `<localhost>/docs`.
+A brief overview of the endpoints can be viewed there. 
 
-- If the React app can't accept whole folders, we might need a more elaborate solution for `SavedModel` types. Meaning, we might need a form that accepts all the different files of a `SavedModel` and then we can construct the proper file structure in the backend.
-- `.hdf5` is a single-file type so there is no problems here.
+For the prediction WebSocket, the following apply:
+- endpoint: `/api/v1/predict/ws/[model_id]`
+- accepts JSON body:
+```
+{
+    "features": []
+}
+```
+- Returns the response from the model or the output transformer, if present.
+
+
+## Notes
+Export requirements with `pip3 freeze > requirements.txt`
+To connect to mongodb instance use URI structure: `mongodb://[username]:[password]@localhost:27017/[optionalDatabaseName]`
+
+### To use Compose with env variables
+- Make sure `.env` and `docker-compose.yml` are in the same directory
+- Define variables inside `.env` and reference then using ${} ex. `- MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}`
+- Make sure `.env` is git ignored
+
+
+
