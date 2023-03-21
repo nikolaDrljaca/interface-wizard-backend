@@ -1,4 +1,4 @@
-from pydantic import BaseModel, typing
+from pydantic import BaseModel
 from typing import Any
 from .request_models import ModelMetadataRequest
 

@@ -76,14 +76,18 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
         timestamp = datetime.today()
         raw = await websocket.receive_json()
         features = raw['features']
+
         if in_tsf is not None:
             features = in_tsf.transform([features])
+        
         target = ml_model.predict(features)
+        
         if out_tsf is not None:
             target = out_tsf(target)
 
-        prediction = Prediction(features=features, target=target,
-                                model_id=metadata['_id'], model_name=metadata['name'], timestamp=str(timestamp))
+        prediction = Prediction(features=raw['features'], target=target,
+                                model_id=str(metadata['_id']), model_name=metadata['name'], timestamp=str(timestamp))
+        
         await db.predictions.insert_one(prediction.dict())
 
         await websocket.send_text(f'{target}')
