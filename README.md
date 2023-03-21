@@ -22,6 +22,14 @@ source env/bin/activate # Unix
 # 3. Install packages
 pip install -r requirements.txt
 
+# 5. IMPORTANT - Create `.env` file in the same directory as `docker-compose.yml`
+This will be used to setup the MongoDB instance. The following keys need to be present.
+Define values as desired or leave listed defaults.
+DB_USER=test
+DB_PASS=test1234
+DB_HOST=localhost
+DB_PORT=27017
+
 # 4. Setup MongoDB instance, make sure Docker is installed
 docker compose up -d
 

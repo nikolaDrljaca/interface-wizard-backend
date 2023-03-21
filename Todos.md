@@ -19,9 +19,9 @@
 - [ ] Documentation.
 
 ## DEL1
-- [ ] Basic workflow for predictions
-- [ ] Data persistence for metadata
-- [ ] Data persistence for predictions
+- [x] Basic workflow for predictions
+- [x] Data persistence for metadata
+- [x] Data persistence for predictions
 
 # DEL2 
 - [ ] Endpoints for metadata retrieval

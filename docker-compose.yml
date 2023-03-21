@@ -1,9 +1,19 @@
+name: wizard-backend
 services:
   mongodb:
-    image: mongo
     container_name: mongodb
+    image: mongo
     ports:
-      - 27017:27017
+      - ${DB_PORT}:27017
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=test
-      - MONGO_INITDB_ROOT_PASSWORD=test1234
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
+    volumes:
+      # named volumes
+      - mongodb-volume:/data/db
+      - mongoconfig:/data/configdb
+
+
+volumes:
+  mongodb-volume:
+  mongoconfig:
