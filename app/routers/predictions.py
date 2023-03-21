@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 from ..service.dir_service import store_model, load_model, load_out_tsf, load_in_tsf
-from ..models.metadata_models import ModelMetadata
+from ..models.metadata_models import ModelMetadata, Prediction
 from ..models.metadata_models import ModelMetadataRequest
 from ..models.response_models import UploadModelResponse
 from ..dependencies import get_db
@@ -16,9 +16,9 @@ router = APIRouter(
 
 
 @router.post(
-    '/upload', 
+    '/upload',
     response_description="Uploaded model ID and timestamps.",
-    response_model=UploadModelResponse, 
+    response_model=UploadModelResponse,
     description="Accepts a pkl model file with transformers and metadata. Files are persisted.")
 async def accept_ml_model(
         model_file: UploadFile,
@@ -73,14 +73,19 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
     # Open the websocket connection
     await websocket.accept()
     while True:
+        timestamp = datetime.today()
         raw = await websocket.receive_json()
         features = raw['features']
         if in_tsf is not None:
             features = in_tsf.transform([features])
-        prediction = ml_model.predict(features)
+        target = ml_model.predict(features)
         if out_tsf is not None:
-            prediction = out_tsf(prediction)
+            target = out_tsf(target)
 
-        await websocket.send_text(f'{prediction}')
+        prediction = Prediction(features=features, target=target,
+                                model_id=metadata['_id'], model_name=metadata['name'], timestamp=str(timestamp))
+        await db.predictions.insert_one(prediction.dict())
+
+        await websocket.send_text(f'{target}')
 
     return

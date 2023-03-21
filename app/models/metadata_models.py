@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, typing
+from typing import Any
 from .request_models import ModelMetadataRequest
 
 
@@ -25,3 +26,11 @@ class ModelMetadata(BaseModel):
             expires=expires,
             feature_names=request.feature_names,
             target_name=request.target_name)
+
+
+class Prediction(BaseModel):
+    features: list[Any]
+    target: str
+    model_id: str
+    model_name: str
+    timestamp: str
