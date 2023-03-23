@@ -97,7 +97,7 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
     return
 
 
-@router.get(path='/', response_model=list[Prediction], description='Returns a list of predictions made by a model with the given id.')
+@router.get(path='', response_model=list[Prediction], description='Returns a list of predictions made by a model with the given id.')
 async def get_prediction(model_id: str, db=Depends(get_db)):
     if len(model_id) != 24:
         raise HTTPException(
