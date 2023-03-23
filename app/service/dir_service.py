@@ -56,7 +56,6 @@ async def store_model(
 
     curr_model_dir = create_curr_model_dir(str(model_id))
     fext = model_file.filename.split('.')[-1]
-    print(fext)
 
     if fext not in {"pkl", "pickle"}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,

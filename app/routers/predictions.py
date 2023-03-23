@@ -32,7 +32,6 @@ async def accept_ml_model(
     # Create the ID, timestamp and expiry timestamp
     created_at = datetime.today()
     # User submitted expiry date is ignored for now.
-    # expires_at = datetime.strptime(request.expires, "%d-%m-%Y %H:%M:%S")
     expires_at = created_at + timedelta(1)
     created_timestamp = datetime.timestamp(created_at)
     exp_timestamp = datetime.timestamp(expires_at)
@@ -78,8 +77,11 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
         features = raw['features']
 
         if in_tsf is not None:
-            features = in_tsf.transform([features])
-        
+            try:
+                features = in_tsf.transform(features)
+            except ValueError:
+                features = in_tsf.transform([features])
+
         target = ml_model.predict(features)
         
         if out_tsf is not None:
@@ -87,7 +89,7 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
 
         prediction = Prediction(features=raw['features'], target=target,
                                 model_id=str(metadata['_id']), model_name=metadata['name'], timestamp=str(timestamp))
-        
+
         await db.predictions.insert_one(prediction.dict())
 
         await websocket.send_text(f'{target}')
