@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, WebSocketException
+from fastapi import APIRouter, WebSocket, WebSocketException, HTTPException
 from fastapi import UploadFile, Form, Depends, status
 from fastapi.responses import JSONResponse
 from bson.objectid import ObjectId
@@ -83,7 +83,7 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
                 features = in_tsf.transform([features])
 
         target = ml_model.predict(features)
-        
+
         if out_tsf is not None:
             target = out_tsf(target)
 
@@ -95,3 +95,14 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
         await websocket.send_text(f'{target}')
 
     return
+
+
+@router.get(path='', response_model=list[Prediction], description='Returns a list of predictions made by a model with the given id.')
+async def get_prediction(model_id: str, db=Depends(get_db)):
+    if len(model_id) != 24:
+        raise HTTPException(
+            status_code=400, detail=f"Malformed model id: {model_id}.")
+
+    predictions = await db.predictions.find({'model_id': model_id}, {'_id': 0}).to_list(length=None)
+
+    return JSONResponse(content=predictions)

@@ -24,9 +24,9 @@
 - [x] Data persistence for predictions
 
 # DEL2 
-- [ ] Endpoints for metadata retrieval
-- [ ] Finished prediction workflow
-- [ ] Enpoints for prediction retrieval
+- [x] Endpoints for metadata retrieval
+- [x] Finished prediction workflow
+- [x] Enpoints for prediction retrieval
 
 # DEL3
 - [ ] Finished enpoints
