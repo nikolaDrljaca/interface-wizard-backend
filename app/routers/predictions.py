@@ -78,9 +78,15 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
 
         if in_tsf is not None:
             try:
-                features = in_tsf.transform(features)
+                features = in_tsf(features)
             except ValueError:
-                features = in_tsf.transform([features])
+                features = in_tsf([features])
+            except TypeError:
+                try:
+                    features = in_tsf.transform([features])
+                except ValueError:
+                    features = in_tsf.transform(features)
+                    
 
         target = ml_model.predict(features)
 
