@@ -1,10 +1,16 @@
 import motor.motor_asyncio as motor
+from dotenv import load_dotenv
+from os import getenv
 
-# Later switch to environment variables
-db_username = 'test'
-db_password = 'test1234'
-db_host = 'localhost'
-db_port = '27017'
+
+load_dotenv()
+
+
+db_username = getenv('DB_USER')
+db_password = getenv('DB_PASS')
+db_host = getenv('DB_HOST')
+db_port = getenv('DB_PORT')
+
 
 async def get_db():
     connection_string = f'mongodb://{db_username}:{db_password}@{db_host}:{db_port}'

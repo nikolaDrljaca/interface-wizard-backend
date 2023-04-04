@@ -1,10 +1,10 @@
-from fastapi import APIRouter, WebSocket, WebSocketException
+from fastapi import APIRouter, WebSocket, WebSocketException, HTTPException
 from fastapi import UploadFile, Form, Depends, status
 from fastapi.responses import JSONResponse
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 from ..service.dir_service import store_model, load_model, load_out_tsf, load_in_tsf
-from ..models.metadata_models import ModelMetadata
+from ..models.metadata_models import ModelMetadata, Prediction
 from ..models.metadata_models import ModelMetadataRequest
 from ..models.response_models import UploadModelResponse
 from ..dependencies import get_db
@@ -16,9 +16,9 @@ router = APIRouter(
 
 
 @router.post(
-    '/upload', 
+    '/upload',
     response_description="Uploaded model ID and timestamps.",
-    response_model=UploadModelResponse, 
+    response_model=UploadModelResponse,
     description="Accepts a pkl model file with transformers and metadata. Files are persisted.")
 async def accept_ml_model(
         model_file: UploadFile,
@@ -32,7 +32,6 @@ async def accept_ml_model(
     # Create the ID, timestamp and expiry timestamp
     created_at = datetime.today()
     # User submitted expiry date is ignored for now.
-    # expires_at = datetime.strptime(request.expires, "%d-%m-%Y %H:%M:%S")
     expires_at = created_at + timedelta(1)
     created_timestamp = datetime.timestamp(created_at)
     exp_timestamp = datetime.timestamp(expires_at)
@@ -73,14 +72,37 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
     # Open the websocket connection
     await websocket.accept()
     while True:
+        timestamp = datetime.today()
         raw = await websocket.receive_json()
         features = raw['features']
-        if in_tsf is not None:
-            features = in_tsf.transform([features])
-        prediction = ml_model.predict(features)
-        if out_tsf is not None:
-            prediction = out_tsf(prediction)
 
-        await websocket.send_text(f'{prediction}')
+        if in_tsf is not None:
+            try:
+                features = in_tsf.transform(features)
+            except ValueError:
+                features = in_tsf.transform([features])
+
+        target = ml_model.predict(features)
+
+        if out_tsf is not None:
+            target = out_tsf(target)
+
+        prediction = Prediction(features=raw['features'], target=target,
+                                model_id=str(metadata['_id']), model_name=metadata['name'], timestamp=str(timestamp))
+
+        await db.predictions.insert_one(prediction.dict())
+
+        await websocket.send_text(f'{target}')
 
     return
+
+
+@router.get(path='', response_model=list[Prediction], description='Returns a list of predictions made by a model with the given id.')
+async def get_prediction(model_id: str, db=Depends(get_db)):
+    if len(model_id) != 24:
+        raise HTTPException(
+            status_code=400, detail=f"Malformed model id: {model_id}.")
+
+    predictions = await db.predictions.find({'model_id': model_id}, {'_id': 0}).to_list(length=None)
+
+    return JSONResponse(content=predictions)
