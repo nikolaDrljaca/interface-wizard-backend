@@ -144,8 +144,8 @@ async def post_prediction(model_id: str, body: PredictionRequest, db=Depends(get
     return PredictionResponse(result=target)
 
 
-@router.get(path='', response_model=list[Prediction], description='Returns a list of predictions made by a model with the given id.')
-async def get_prediction(model_id: str, db=Depends(get_db)):
+@router.get(path='/predictions/{model_id}', response_model=list[Prediction], description='Returns a list of predictions made by a model with the given id.')
+async def get_predictions(model_id: str, db=Depends(get_db)):
     if len(model_id) != 24:
         raise HTTPException(
             status_code=400, detail=f"Malformed model id: {model_id}.")
