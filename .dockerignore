@@ -1,0 +1,6 @@
+.github
+.vscode
+env
+temp
+.git
+Dockerfile
