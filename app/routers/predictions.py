@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 from ..service.dir_service import store_model, load_model, load_out_tsf, load_in_tsf
 from ..models.metadata_models import ModelMetadata, Prediction
 from ..models.metadata_models import ModelMetadataRequest
-from ..models.response_models import UploadModelResponse
+from ..models.response_models import UploadModelResponse, PredictionResponse
+from ..models.request_models import PredictionRequest
 from ..dependencies import get_db
 
 
@@ -54,7 +55,7 @@ async def accept_ml_model(
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=response.dict())
 
 
-@router.websocket('/predict/ws')
+@router.websocket('/predict/ws/{model_id}')
 async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
     if len(model_id) != 24:
         raise WebSocketException(code=status.WS_1011_INTERNAL_ERROR)
@@ -86,7 +87,6 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
                     features = in_tsf.transform([features])
                 except ValueError:
                     features = in_tsf.transform(features)
-                    
 
         target = ml_model.predict(features)
 
@@ -101,6 +101,47 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
         await websocket.send_text(f'{target}')
 
     return
+
+
+@router.post(path="/predict/{model_id}", response_model=PredictionResponse, description="Given `model_id`, makes predictions and returns outcomes. Implemented as an alternative to WebSocket based version.")
+async def post_prediction(model_id: str, body: PredictionRequest, db=Depends(get_db)) -> str:
+    if len(model_id) != 24:
+        raise HTTPException(
+            status_code=400, detail=f"Malformed model id {model_id}")
+
+    metadata = await db.ml_metadata.find_one({"_id": ObjectId(model_id)})
+    if metadata is None:
+        raise HTTPException(status_code=404, detail={
+                            "error": f"Model with id: {model_id} not found"})
+
+    ml_model = load_model(model_id)
+    in_tsf = load_in_tsf(model_id) if metadata['in_transformer'] else None
+    out_tsf = load_out_tsf(model_id) if metadata['out_transformer'] else None
+
+    timestamp = datetime.today()
+    features = body.features
+    if in_tsf is not None:
+        try:
+            features = in_tsf(features)
+        except ValueError:
+            features = in_tsf([features])
+        except TypeError:
+            try:
+                features = in_tsf.transform([features])
+            except ValueError:
+                features = in_tsf.transform(features)
+
+    target = ml_model.predict(features)
+
+    if out_tsf is not None:
+        target = out_tsf(target)
+
+    prediction = Prediction(features=body.features, target=target, model_id=str(
+        metadata['_id']), model_name=metadata['name'], timestamp=str(timestamp))
+
+    await db.predictions.insert_one(prediction.dict())
+
+    return PredictionResponse(result=target)
 
 
 @router.get(path='', response_model=list[Prediction], description='Returns a list of predictions made by a model with the given id.')
