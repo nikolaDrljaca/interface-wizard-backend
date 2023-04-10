@@ -104,7 +104,7 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
 
 
 @router.post(path="/predict/{model_id}", response_model=PredictionResponse, description="Given `model_id`, makes predictions and returns outcomes. Implemented as an alternative to WebSocket based version.")
-async def post_prediction(model_id: str, body: PredictionRequest, db=Depends(get_db)) -> str:
+async def post_prediction(model_id: str, body: PredictionRequest, db=Depends(get_db)) -> PredictionResponse:
     if len(model_id) != 24:
         raise HTTPException(
             status_code=400, detail=f"Malformed model id {model_id}")
