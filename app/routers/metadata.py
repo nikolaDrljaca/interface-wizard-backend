@@ -16,7 +16,7 @@ async def get_all(db=Depends(get_db)):
     return JSONResponse(content=list(all_metadata))
 
 
-@router.get(path='', response_model=ModelMetadataResponse, description='Returns metadata information for a MODEL ID.')
+@router.get(path='/{model_id}', response_model=ModelMetadataResponse, description='Returns metadata information for a MODEL ID.')
 async def get_by_id(model_id: str, db=Depends(get_db)):
     id = ''
     try:

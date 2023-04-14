@@ -17,3 +17,7 @@ class ModelMetadataResponse(BaseModel):
     expires: str
     feature_names: list[str]
     target_name: str
+
+
+class PredictionResponse(BaseModel):
+    result: str

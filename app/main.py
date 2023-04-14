@@ -9,7 +9,7 @@ app.include_router(examples.router)
 app.include_router(metadata.router)
 
 origins = [
-    'http://localhost:3000'
+    '*'
 ]
 
 app.add_middleware(
