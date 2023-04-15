@@ -19,3 +19,9 @@ async def get_db():
         yield client.interface_wizard
     finally:
         client.close()
+
+
+def get_db_sync():
+    connection_string = f'mongodb://{db_username}:{db_password}@{db_host}:{db_port}'
+    client = motor.AsyncIOMotorClient(connection_string)
+    return client
