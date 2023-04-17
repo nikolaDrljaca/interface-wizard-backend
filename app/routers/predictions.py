@@ -33,7 +33,7 @@ async def accept_ml_model(
     # Create the ID, timestamp and expiry timestamp
     created_at = datetime.today()
     # User submitted expiry date is ignored for now.
-    expires_at = created_at + timedelta(1)
+    expires_at = created_at + timedelta(days=30)
     created_timestamp = datetime.timestamp(created_at)
     exp_timestamp = datetime.timestamp(expires_at)
 

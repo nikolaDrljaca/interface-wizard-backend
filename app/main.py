@@ -11,7 +11,7 @@ async def cleanup_task(db):
     while True:
         print('executing cleanup in the background')
         await cleanup.model_cleanup(db)
-        await asyncio.sleep(60 * 1)
+        await asyncio.sleep(60 * 60)
 
 
 @asynccontextmanager
