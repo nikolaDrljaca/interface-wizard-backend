@@ -27,7 +27,8 @@ def create_curr_model_dir(model_uuid: str):
 def load_model(model_id: str):
     path = os.path.join(get_models_dir(), model_id)
     if not os.path.exists(path):
-        return
+        raise HTTPException(
+            404, detail={"error": f"Model with {model_id} has expired and was deleted. Metadata is still available."})
     model = joblib.load(f'{path}/ml_m.pkl')
     return model
 
