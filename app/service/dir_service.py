@@ -1,9 +1,9 @@
+import joblib
+import aiofiles
+from fastapi import UploadFile, HTTPException, status
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # import tensorflow as tf
-from fastapi import UploadFile, HTTPException, status
-import aiofiles
-import joblib
 
 
 MODELS_DIR = './temp/ml_models'
@@ -27,7 +27,8 @@ def create_curr_model_dir(model_uuid: str):
 def load_model(model_id: str):
     path = os.path.join(get_models_dir(), model_id)
     if not os.path.exists(path):
-        return
+        raise HTTPException(
+            404, detail={"error": f"Model with {model_id} has expired and was deleted. Metadata is still available."})
     model = joblib.load(f'{path}/ml_m.pkl')
     return model
 
@@ -36,7 +37,11 @@ def load_in_tsf(model_id: str):
     path = os.path.join(get_models_dir(), model_id)
     if not os.path.exists(path):
         return
-    in_tsf = joblib.load(f'{path}/in_tsf.pkl')
+    in_tsf = ""
+    try:
+        in_tsf = joblib.load(f'{path}/in_tsf.pkl')
+    except Exception as e:
+        raise HTTPException(404, detail=f"Input transformer not found.")
     return in_tsf
 
 
@@ -44,7 +49,11 @@ def load_out_tsf(model_id: str):
     path = os.path.join(get_models_dir(), model_id)
     if not os.path.exists(path):
         return
-    out_tsf = joblib.load(f'{path}/out_tsf.pkl')
+    out_tsf = ""
+    try:
+        out_tsf = joblib.load(f'{path}/out_tsf.pkl')
+    except Exception as e:
+        raise HTTPException(404, detail=f"Output transformer not found.")
     return out_tsf
 
 
