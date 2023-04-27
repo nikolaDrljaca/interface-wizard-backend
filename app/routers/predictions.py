@@ -33,7 +33,7 @@ async def accept_ml_model(
     # Create the ID, timestamp and expiry timestamp
     created_at = datetime.today()
     # User submitted expiry date is ignored for now.
-    expires_at = created_at + timedelta(1)
+    expires_at = created_at + timedelta(days=30)
     created_timestamp = datetime.timestamp(created_at)
     exp_timestamp = datetime.timestamp(expires_at)
 
@@ -107,12 +107,12 @@ async def predict(websocket: WebSocket, model_id: str, db=Depends(get_db)):
 async def post_prediction(model_id: str, body: PredictionRequest, db=Depends(get_db)) -> PredictionResponse:
     if len(model_id) != 24:
         raise HTTPException(
-            status_code=400, detail=f"Malformed model id {model_id}")
+            status_code=400, detail={"error": f"Malformed request. {model_id} is invalid."})
 
     metadata = await db.ml_metadata.find_one({"_id": ObjectId(model_id)})
     if metadata is None:
         raise HTTPException(status_code=404, detail={
-                            "error": f"Model with id: {model_id} not found"})
+                            "error": f"Model with id: {model_id} not found."})
 
     ml_model = load_model(model_id)
     in_tsf = load_in_tsf(model_id) if metadata['in_transformer'] else None
