@@ -41,6 +41,7 @@ def load_in_tsf(model_id: str):
     try:
         in_tsf = joblib.load(f'{path}/in_tsf.pkl')
     except Exception as e:
+        print(e)
         raise HTTPException(404, detail=f"Input transformer not found.")
     return in_tsf
 

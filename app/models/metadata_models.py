@@ -13,6 +13,8 @@ class ModelMetadata(BaseModel):
     expires: float
     feature_names: list[str]
     target_name: str
+    message_format: str
+    include_certain: bool
 
     @staticmethod
     def from_request(request: ModelMetadataRequest, full_name: str, created: float, expires: float):
@@ -24,13 +26,15 @@ class ModelMetadata(BaseModel):
             out_transformer=request.out_transformer,
             created=created,
             expires=expires,
+            message_format=request.message_format,
+            include_certain=request.include_certain,
             feature_names=request.feature_names,
             target_name=request.target_name)
 
 
 class Prediction(BaseModel):
     features: list[Any]
-    target: str
+    target: Any
     model_id: str
     model_name: str
     timestamp: str
