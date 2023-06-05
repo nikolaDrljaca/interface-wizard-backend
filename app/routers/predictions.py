@@ -131,7 +131,11 @@ async def post_prediction(model_id: str, body: PredictionRequest, db=Depends(get
             except (ValueError, IndexError):
                 features = in_tsf.transform(features)
 
-    target = ml_model.predict(features)
+    try:
+        target = ml_model.predict(features)
+    except:
+        target = ml_model.predict([features])
+
     proba = ""
     if metadata["include_certain"]:
         try:
