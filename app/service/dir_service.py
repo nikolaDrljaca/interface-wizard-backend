@@ -28,7 +28,7 @@ def load_model(model_id: str):
     path = os.path.join(get_models_dir(), model_id)
     if not os.path.exists(path):
         raise HTTPException(
-            404, detail={"error": f"Model with {model_id} has expired and was deleted. Metadata is still available."})
+            404, detail=f"Model with {model_id} has expired and was deleted. Metadata is still available.")
     model = joblib.load(f'{path}/ml_m.pkl')
     return model
 
@@ -41,6 +41,7 @@ def load_in_tsf(model_id: str):
     try:
         in_tsf = joblib.load(f'{path}/in_tsf.pkl')
     except Exception as e:
+        print(e)
         raise HTTPException(404, detail=f"Input transformer not found.")
     return in_tsf
 

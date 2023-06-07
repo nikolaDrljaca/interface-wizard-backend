@@ -128,20 +128,32 @@ async def post_prediction(model_id: str, body: PredictionRequest, db=Depends(get
         except TypeError:
             try:
                 features = in_tsf.transform([features])
-            except ValueError:
+            except (ValueError, IndexError):
                 features = in_tsf.transform(features)
 
-    target = ml_model.predict(features)
+    try:
+        target = ml_model.predict(features)
+    except:
+        target = ml_model.predict([features])
+
+    proba = ""
+    if metadata["include_certain"]:
+        try:
+            proba = ml_model.predict_proba(features)
+            proba = float("{:.2f}".format(proba[0][0] * 100))
+        except:
+            proba = "-unknown-"
 
     if out_tsf is not None:
         target = out_tsf(target)
 
-    prediction = Prediction(features=body.features, target=target, model_id=str(
+    prediction = Prediction(features=body.features, target=str(target[0]), model_id=str(
         metadata['_id']), model_name=metadata['name'], timestamp=str(timestamp))
 
     await db.predictions.insert_one(prediction.dict())
+    out = metadata["message_format"].format(target[0], proba)
 
-    return PredictionResponse(result=target)
+    return PredictionResponse(result=out)
 
 
 @router.get(path='/predictions/{model_id}', response_model=list[Prediction], description='Returns a list of predictions made by a model with the given id.')

@@ -11,6 +11,8 @@ class ModelMetadataRequest(BaseModel):
     expires: str
     feature_names: list[str]
     target_name: str
+    message_format: str
+    include_certain: bool
 
 
 class PredictionRequest(BaseModel):
